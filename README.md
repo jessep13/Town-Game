@@ -69,7 +69,7 @@ This doesn't work in reverse, i.e you can't get 2 gold from 1 food; you would ne
 
 -- NOTES --
 
-* Events start appearing after the first month. They can be good or bad.
+* Events appear randomly and can be good or bad.
 
 * Currently, there is no save feature. I will add this in the future.
 

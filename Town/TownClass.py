@@ -20,6 +20,7 @@ class Town:
     homes = 4
     shop = 0
     gold_mine = 0
+    lab = 0
 
     income = 0
     revenue = 0
@@ -31,6 +32,18 @@ class Town:
     town_hall = False
 
     event_id = 0
+
+    rp = 0
+    dr = False
+    rt = "nothing"
+
+    farm_lvl = 1
+    gm_lvl = 1
+    house_lvl = 1
+
+    farm_rc = 20
+    gm_rc = 20
+    house_rc = 20
 
     """
 
@@ -60,6 +73,10 @@ class Town:
         else:
             return False
 
+    @staticmethod
+    def clear():
+        os.system("cls")
+
     def stat_update(self):
         # Time update
         self.day += 1
@@ -82,14 +99,14 @@ class Town:
 
         # Stat update
         if self.m_id is 1:
-            self.growth = math.floor(10 * (self.farm * 6 * 2 * (1 - self.tax) - self.pop)) / 10
+            self.growth = math.floor(10 * (self.farm * 6 * 2 * (1 - self.tax) - self.pop) * self.farm_lvl) / 10
         elif self.m_id is 3:
-            self.growth = math.floor(10 * (self.farm * 2 * 2 * (1 - self.tax) - self.pop)) / 10
+            self.growth = math.floor(10 * (self.farm * 2 * 2 * (1 - self.tax) - self.pop) * self.farm_lvl) / 10
         else:
-            self.growth = math.floor(10 * (self.farm * 4 * 2 * (1 - self.tax) - self.pop)) / 10
+            self.growth = math.floor(10 * (self.farm * 4 * 2 * (1 - self.tax) - self.pop) * self.farm_lvl) / 10
 
-        self.income = int(self.pop * self.tax) + self.shop + self.gold_mine * 3
-        self.revenue = self.farm
+        self.income = int(self.pop * self.tax) + self.shop + self.gold_mine * 3 * self.gm_lvl
+        self.revenue = self.farm + self.lab * 5
         self.profit = self.income - self.revenue
 
         self.jobs = self.farm * 3 + self.shop * 4 + self.gold_mine * 2
@@ -98,10 +115,29 @@ class Town:
         self.food = math.floor(10 * (self.food + self.growth)) / 10
         self.gold += self.profit
 
-        self.housing = self.homes * 5
+        self.housing = self.homes * 5 * self.house_lvl
+
+        # Research
+        if self.dr is True:
+            self.rp += self.lab * 2
+            if self.rt is "farm" and self.rp >= self.farm_rc:
+                self.rp -= self.farm_rc
+                self.farm_lvl += 1
+                self.farm_rc += 10
+                self.dr = False
+            elif self.rt is "gm" and self.rp >= self.gm_rc:
+                self.rp -= self.gm_rc
+                self.gm_lvl += 1
+                self.gm_rc += 10
+                self.dr = False
+            elif self.rt is "house" and self.rp >= self.house_rc:
+                self.rp -= self.house_rc
+                self.house_lvl += 1
+                self.house_rc += 10
+                self.dr = False
 
         # Pop growth/decay
-        if self.growth > 0 and self.housing > self.pop and self.unemp < 0 and self.food >= 10:
+        if self.growth > 0 and self.housing > self.pop and self.unemp < 0 and self.food >= self.pop * 2:
             if self.per_chance(60) is True:
                 self.pop += 1
                 self.food -= 10
@@ -111,47 +147,46 @@ class Town:
         elif self.unemp > 0 and self.pop > 0:
             if self.per_chance(75) is True: self.pop -= 1
 
-        # Event
-        if self.m_id is 0 and self.year is 1:
-            self.event_id = 0
+        # Events
+        if self.per_chance(15) is True:
+            self.event_id = 1
+            self.food += 60
+        elif self.per_chance(10) is True:
+            self.event_id = 2
+            self.gold += 70
+        elif self.per_chance(5) is True and self.gold_mine >= 1:
+            self.event_id = 3
+            self.pop -= 1
+        elif self.per_chance(20) is True and self.m_id is 3:
+            self.event_id = 4
+            self.food -= 50
+        elif self.per_chance(10) is True and (self.m_id is 0 or self.m_id is 1):
+            self.event_id = 5
+            self.food -= 50
+            self.gold -= 50
         else:
-            if self.per_chance(15) is True:
-                self.event_id = 1
-                self.food += 60
-            elif self.per_chance(10) is True:
-                self.event_id = 2
-                self.gold += 70
-            elif self.per_chance(5) is True and self.gold_mine >= 1:
-                self.event_id = 3
-                self.pop -= 1
-            elif self.per_chance(20) is True and self.m_id is 3:
-                self.event_id = 4
-                self.food -= 50
-            elif self.per_chance(10) is True and (self.m_id is 0 or self.m_id is 1):
-                self.event_id = 5
-                self.food -= 50
-                self.gold -= 50
+            self.event_id = 0
 
     def town_menu(self):
         while True:
-            os.system("cls")
+            self.clear()
 
             # Semi Stat Update
             if self.m_id is 1:
-                growth = math.floor(10 * (self.farm * 6 * 2 * (1 - self.tax) - self.pop)) / 10
+                self.growth = math.floor(10 * (self.farm * 6 * 2 * (1 - self.tax) - self.pop) * self.farm_lvl) / 10
             elif self.m_id is 3:
-                self.growth = math.floor(10 * (self.farm * 2 * 2 * (1 - self.tax) - self.pop)) / 10
+                self.growth = math.floor(10 * (self.farm * 2 * 2 * (1 - self.tax) - self.pop) * self.farm_lvl) / 10
             else:
-                self.growth = math.floor(10 * (self.farm * 4 * 2 * (1 - self.tax) - self.pop)) / 10
+                self.growth = math.floor(10 * (self.farm * 4 * 2 * (1 - self.tax) - self.pop) * self.farm_lvl) / 10
 
-            self.income = int(self.pop * self.tax) + self.shop + self.gold_mine * 3
-            self.revenue = self.farm
+            self.income = int(self.pop * self.tax) + self.shop + self.gold_mine * 3 * self.gm_lvl
+            self.revenue = self.farm + self.lab * 5
             self.profit = self.income - self.revenue
 
             self.jobs = self.farm * 3 + self.shop * 4 + self.gold_mine * 2
             self.unemp = self.pop - self.jobs
 
-            self.housing = self.homes * 5
+            self.housing = self.homes * 5 * self.house_lvl
 
             # Stat print
             print(self.name, ": Day", self.day, self.month, "Year", self.year)
@@ -193,10 +228,10 @@ class Town:
             print("\n----------------\n")
 
             # Input handle
-            if self.town_hall is False:
-                print("1: Next Day\n2: Build\n3: Buildings\nE: Exit Game")
-            else:
-                print("1: Next Day\n2: Build\n3: Buildings\n4: Town Management\nE: Exit Game")
+            print("1: Next Day\n2: Build\n3: Buildings")
+            if self.town_hall is True: print("4: Town Management")
+            if self.lab >= 1: print("5: Research")
+            print("E: Exit Game")
 
             i = input("> ")
 
@@ -207,7 +242,7 @@ class Town:
             elif i is "2":
                 self.build()
             elif i is "3":
-                os.system("cls")
+                self.clear()
                 print("Farms:", self.farm)
                 print("Houses:", self.homes)
                 print("Shops:", self.shop)
@@ -215,12 +250,18 @@ class Town:
                 input("PRESS ENTER TO GO BACK")
             elif i is "4" and self.town_hall is True:
                 self.town_management()
+            elif i is "5" and self.lab >= 1:
+                self.research()
 
     def build(self):
-        os.system("cls")
+        self.clear()
         print("What would you like to build?")
-        print("1: Farm (5G)\n2: House (10G)\n3: Shop (15G)\n4: Gold Mine (20G)\n"
-              "5: Town Hall (100G)\n0: Exit Build Menu")
+        print("1: Farm (5G)\n2: House (10G)\n3: Shop (15G)\n4: Gold Mine (20G)")
+        if self.town_hall is False:
+            print("5: Town Hall (100G)")
+        else:
+            print("5: Research Lab (70G)")
+        print("0: Exit Build Menu")
 
         i = int(input("> "))
         if i is 1 and self.gold >= 5:
@@ -235,21 +276,23 @@ class Town:
         elif i is 4 and self.gold >= 20:
             self.gold_mine += 1
             self.gold -= 20
-        elif i is 5 and self.gold >= 100:
+        elif i is 5 and self.town_hall is False and self.gold >= 100:
             self.gold -= 100
             self.town_hall = True
+        elif i is 5 and self.town_hall is True and self.gold >= 70:
+            self.gold -= 70
+            self.lab += 1
 
     def town_management(self):
-        os.system("cls")
+        self.clear()
         print("1: Tax Rates\n2: Trade\n0: Exit Menu")
 
         i = int(input("> "))
-
         if i is 1:
             print("Enter the tax rate as a integer %")
             print("Current tax rate:", self.tax*100, "%")
             print("NOTE: Lower Tax = More Food; Higher Tax = Less Food")
-            tax = float(int(input("> "))) / 100
+            self.tax = float(int(input("> "))) / 100
         elif i is 2:
             print("What item will you trade for (F=Food, G=Gold)")
             i = input("> ")
@@ -268,3 +311,29 @@ class Town:
                 if self.food >= i:
                     self.food -= 2 * i
                     self.gold += i
+
+    def research(self):
+        self.clear()
+        if self.dr is True:
+            if self.rt is "farm": print("Research:", self.rp, "/", self.farm_rc)
+            if self.rt is "gm": print("Research:", self.rp, "/", self.gm_rc)
+            if self.rt is "house": print("Research:", self.rp, "/", self.house_rc)
+        print("Enter a research project to begin. This will cancel the current project though")
+        print("1: Farm Lvl", self.farm_lvl + 1)
+        print("2: Gold Mine Lvl", self.gm_lvl + 1)
+        print("3: House Lvl", self.house_lvl + 1)
+        print("0: Exit")
+
+        i = int(input("> "))
+        if i is 1:
+            self.rp = 0
+            self.dr = True
+            self.rt = "farm"
+        elif i is 2:
+            self.rp = 0
+            self.dr = True
+            self.rt = "gm"
+        elif i is 3:
+            self.rp = 0
+            self.dr = True
+            self.rt = "house"

@@ -120,8 +120,8 @@ class Town:
 
         self.housing = self.homes * 5 * self.house_lvl
 
-        self.efm = 10 ** math.floor(math.log10(self.food))
-        self.egm = 10 ** math.floor(math.log10(self.gold))
+        self.efm = 10 ** math.floor(math.log10(self.food+1))
+        self.egm = 10 ** math.floor(math.log10(self.gold+1))
 
         self.research_points()
         self.pop_growth()

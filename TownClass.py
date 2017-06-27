@@ -16,6 +16,9 @@ class Town:
     gold = 0
     tax = 0.5
 
+    efm = 0
+    egm = 0
+
     farm = 5
     homes = 4
     shop = 0
@@ -117,7 +120,14 @@ class Town:
 
         self.housing = self.homes * 5 * self.house_lvl
 
-        # Research
+        self.efm = 10 ** math.floor(math.log10(self.food))
+        self.egm = 10 ** math.floor(math.log10(self.gold))
+
+        self.research_points()
+        self.pop_growth()
+        self.events()
+
+    def research_points(self):
         if self.dr is True:
             self.rp += self.lab * 2
             if self.rt is "farm" and self.rp >= self.farm_rc:
@@ -136,7 +146,7 @@ class Town:
                 self.house_rc += 10
                 self.dr = False
 
-        # Pop growth/decay
+    def pop_growth(self):
         if self.growth > 0 and self.housing > self.pop and self.unemp < 0 and self.food >= self.pop * 2:
             if self.per_chance(60) is True:
                 self.pop += 1
@@ -147,23 +157,23 @@ class Town:
         elif self.unemp > 0 and self.pop > 0:
             if self.per_chance(75) is True: self.pop -= 1
 
-        # Events
+    def events(self):
         if self.per_chance(15) is True:
             self.event_id = 1
-            self.food += 60
+            self.food += 60 * self.efm
         elif self.per_chance(10) is True:
             self.event_id = 2
-            self.gold += 70
+            self.gold += 70 * self.egm
         elif self.per_chance(5) is True and self.gold_mine >= 1:
             self.event_id = 3
             self.pop -= 1
         elif self.per_chance(20) is True and self.m_id is 3:
             self.event_id = 4
-            self.food -= 50
+            self.food -= 50 * self.efm
         elif self.per_chance(10) is True and (self.m_id is 0 or self.m_id is 1):
             self.event_id = 5
-            self.food -= 50
-            self.gold -= 50
+            self.food -= 50 * self.efm
+            self.gold -= 50 * self.egm
         else:
             self.event_id = 0
 
@@ -209,21 +219,23 @@ class Town:
                                   "Make food to grow, and to avoid decay.")
             if self.unemp is 0: print("* There aren't any extra jobs for people. "
                                  "Population won't grow until there are extra jobs available.")
+            if self.lab >= 1 and self.dr is False: print("* Your town isn't researching. "
+                                                         "You can schedule research in the research menu.")
             print("\n-- EVENT --\n")
 
             # Event print
             if self.event_id is 0:
                 print("Nothing has happened today.")
             elif self.event_id is 1:
-                print("Your farms had a good harvest. (+60 food)")
+                print("Your farms had a good harvest. (+60 base food)")
             elif self.event_id is 2:
-                print("Your miners have struck gold! (+70 gold)")
+                print("Your miners have struck gold! (+70 base gold)")
             elif self.event_id is 3:
-                print("Someone got murdered last night. (-1 pop)")
+                print("Someone got murdered last night. (-1 base pop)")
             elif self.event_id is 4:
-                print("Your food suplies got spoiled in the cold. (-50 food)")
+                print("Your food supplies got spoiled in the cold. (-50 base food)")
             elif self.event_id is 5:
-                print("The town got flooded. (-50 food and gold)")
+                print("The town got flooded. (-50 base food and gold)")
 
             print("\n----------------\n")
 
@@ -297,14 +309,14 @@ class Town:
             print("What item will you trade for (F=Food, G=Gold)")
             i = input("> ")
 
-            if i is "F":
+            if i is "F" or i is "f":
                 print("You can trade 2 gold for 1 food. Enter how much food you want. "
                       "Make sure you have enough to perform the transaction")
                 i = int(input("> "))
                 if self.gold >= i:
                     self.gold -= 2 * i
                     self.food += i
-            if i is "G":
+            if i is "G" or i is "g":
                 print("You can trade 2 food for 1 gold. Enter how much gold you want. "
                       "Make sure you have enough to perform the transaction")
                 i = int(input("> "))

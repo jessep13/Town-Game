@@ -22,6 +22,7 @@ class Town:
     farm = 5
     homes = 4
     shop = 0
+    granary = 3
     gold_mine = 0
     lab = 0
 
@@ -116,6 +117,9 @@ class Town:
         self.unemp = self.pop - self.jobs
 
         self.food = math.floor(10 * (self.food + self.growth)) / 10
+
+        if self.food > self.granary * 10: self.food = self.granary * 10
+
         self.gold += self.profit
 
         self.housing = self.homes * 5 * self.house_lvl
@@ -202,7 +206,7 @@ class Town:
             print(self.name, ": Day", self.day, self.month, "Year", self.year)
             print("\n-- TOWN STATS --\n")
             print("Population:", self.pop, "/", self.housing)
-            print("Food:", self.food, "(", self.growth, ")")
+            print("Food:", self.food, "/", self.granary*10, "(", self.growth, ")")
             print("Gold:", self.gold, "(", self.profit, ")")
             print("Jobs:", self.jobs)
             print("\n-- NOTICES/ALERTS --\n")
@@ -221,6 +225,7 @@ class Town:
                                  "Population won't grow until there are extra jobs available.")
             if self.lab >= 1 and self.dr is False: print("* Your town isn't researching. "
                                                          "You can schedule research in the research menu.")
+            if self.food == self.granery*10: print("* You are making extra food that can't be stored in your granaries. build more to increase food storgae")
             print("\n-- EVENT --\n")
 
             # Event print
@@ -258,6 +263,7 @@ class Town:
                 print("Farms:", self.farm)
                 print("Houses:", self.homes)
                 print("Shops:", self.shop)
+                print("Granaries:", self.granary)
                 print("Gold Mines:", self.gold_mine)
                 input("PRESS ENTER TO GO BACK")
             elif i is "4" and self.town_hall is True:
@@ -268,11 +274,11 @@ class Town:
     def build(self):
         self.clear()
         print("What would you like to build?")
-        print("1: Farm (5G)\n2: House (10G)\n3: Shop (15G)\n4: Gold Mine (20G)")
+        print("1: Farm (5G)\n2: House (10G)\n3: Shop (15G)\n4: Granary (20G)\n5: Gold Mine (20G)")
         if self.town_hall is False:
-            print("5: Town Hall (100G)")
+            print("6: Town Hall (100G)")
         else:
-            print("5: Research Lab (70G)")
+            print("6: Research Lab (70G)")
         print("0: Exit Build Menu")
 
         i = int(input("> "))
@@ -286,12 +292,15 @@ class Town:
             self.shop += 1
             self.gold -= 15
         elif i is 4 and self.gold >= 20:
+            self.granary += 1
+            self.gold -= 20
+        elif i is 5 and self.gold >= 20:
             self.gold_mine += 1
             self.gold -= 20
-        elif i is 5 and self.town_hall is False and self.gold >= 100:
+        elif i is 6 and self.town_hall is False and self.gold >= 100:
             self.gold -= 100
             self.town_hall = True
-        elif i is 5 and self.town_hall is True and self.gold >= 70:
+        elif i is 6 and self.town_hall is True and self.gold >= 70:
             self.gold -= 70
             self.lab += 1
 

@@ -225,7 +225,7 @@ class Town:
                                  "Population won't grow until there are extra jobs available.")
             if self.lab >= 1 and self.dr is False: print("* Your town isn't researching. "
                                                          "You can schedule research in the research menu.")
-            if self.food == self.granery*10: print("* You are making extra food that can't be stored in your granaries. build more to increase food storgae")
+            if self.food == self.granary*10: print("* You are making extra food that can't be stored in your granaries. build more to increase food storgae")
             print("\n-- EVENT --\n")
 
             # Event print
